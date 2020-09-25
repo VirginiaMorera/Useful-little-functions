@@ -10,21 +10,22 @@
 # mask is a sf or SpatialPolygonDataFrame object containing the polygons to plot over the raster (e.g land if the raster is marine). Only for plotting purposes
 
 points_to_raster <- function(x, Lon = "Longitude", Lat = "Latitude", proj = CRS("+init=epsg:4326"), ID = "Name", 
-                             perc = 50, min.pos = 5, mask = world) {
+                             perc = 50, min.pos = 5, mask = world, plotIT = TRUE) {
   require(sf)
   require(sp)
   require(plyr)
   require(tidyverse)
   require(fasterize)
   require(adehabitatHR)
-  '%!in%' <- function(x,y)!('%in%'(x,y))
+  
   # remove data with <5 reloc
-  x_sum <- plyr::ddply(x, ~ Name, summarise, pos = length(Latitude))
-  x  <- x[x[,ID] %!in% c(x_sum[x_sum$pos < 500,][,ID]),]
+  x_sum <- data.frame(table(x[,ID]))
+  x  <- x[x[,ID] %!in% as.character(x_sum[x_sum$Freq < 700,]$Var1),]
   x %>% 
-    droplevels() -> x 
+    droplevels() -> x
     
   if(nrow(x) > 0) {
+    
     # generate spatial points
     
     sp <- SpatialPointsDataFrame(coords = x[,c(Lon, Lat)], 
@@ -54,10 +55,13 @@ points_to_raster <- function(x, Lon = "Longitude", Lat = "Latitude", proj = CRS(
       rm(list = c("sp", "kud", "core", "core_sf"))
       
       #plot
-      plot(count_gear)
-      plot(mask, add = T)
+      if(plotIT) {
+        plot(count_gear)
+        plot(mask, add = T)}
+      
       return(count_gear)}
   } else {
-    return(cat("not enough relocations to calculate kernel", "\n"))
+    cat("not enough relocations to calculate kernel", "\n")
+    return(as.character(unique(x$dataGroup)))
   }
 }
