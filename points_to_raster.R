@@ -54,11 +54,10 @@ points_to_raster <- function(x, Lon = "Longitude", Lat = "Latitude", proj = CRS(
       rm(list = c("sp", "kud", "core", "core_sf"))
       
       #plot
-      plot(count_gear, main = unique(x$dataGroup))
+      plot(count_gear)
       plot(mask, add = T)
       return(count_gear)}
   } else {
-    cat("not enough relocations to calculate kernel", "\n")
-    return(as.character(unique(x[,ID])))
+    return(cat("not enough relocations to calculate kernel", "\n"))
   }
 }
