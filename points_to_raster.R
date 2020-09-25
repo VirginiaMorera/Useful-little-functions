@@ -20,8 +20,8 @@ points_to_raster <- function(x, Lon = "Longitude", Lat = "Latitude", proj = CRS(
   '%!in%' <- function(x,y)!('%in%'(x,y))
   # remove data with <5 reloc
   x_sum <- plyr::ddply(x, ~ Name, summarise, pos = length(Latitude))
+  x  <- x[x[,ID] %!in% c(x_sum[x_sum$pos < 500,][,ID]),]
   x %>% 
-    filter(Name %!in% c(x_sum[x_sum$pos < min.pos,]$Name)) %>% 
     droplevels() -> x 
     
   if(nrow(x) > 0) {
