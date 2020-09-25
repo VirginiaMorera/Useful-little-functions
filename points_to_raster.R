@@ -59,6 +59,6 @@ points_to_raster <- function(x, Lon = "Longitude", Lat = "Latitude", proj = CRS(
       return(count_gear)}
   } else {
     cat("not enough relocations to calculate kernel", "\n")
-    return(as.character(unique(x$dataGroup)))
+    return(as.character(unique(x[,ID])))
   }
 }
