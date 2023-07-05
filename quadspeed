@@ -1,0 +1,25 @@
+# quadratic speed for filter following McConnell et al. 1992 Foraging ecology of southern elephant seals in relation to the bathymetry and productivity of the Southern Ocean
+
+quadspeed <- function(x, datetime) {
+  require(lubridate)
+  require(magrittr)
+  x2 <- x %>% 
+    mutate(t1  = as.numeric(difftime(lead(timestamp, n = 1), timestamp), units = "secs"),
+           t2  = as.numeric(difftime(lead(timestamp, n = 2), timestamp), units = "secs"),
+           t99 = abs(as.numeric(difftime(lag(timestamp, n = 1), timestamp), units = "secs")),
+           t98 = abs(as.numeric(difftime(lag(timestamp, n = 2), timestamp), units = "secs")), 
+           d1  = as.numeric(sf::st_distance(lead(geometry, n = 1), geometry, by_element = TRUE)), 
+           d2  = as.numeric(sf::st_distance(lead(geometry, n = 2), geometry, by_element = TRUE)), 
+           d99 = as.numeric(sf::st_distance(lag(geometry, n = 1), geometry, by_element = TRUE)), 
+           d98 = as.numeric(sf::st_distance(lag(geometry, n = 2), geometry, by_element = TRUE)), 
+           s1 = (d1/t1)*3600,
+           s2 = (d2/t2)*3600,
+           s99 = (d99/t99)*3600, 
+           s98 = (d98/t98)*3600) %>% 
+    rowwise %>% 
+    mutate(Qspeed =  sqrt(sum(s1^2, s2^2, s99^2, s98^2)/4)) %>% 
+    ungroup() %>% 
+    select(-t1, -t2, -t99, -t98, -d1, -d2, -d99, -d98, -s1, -s2, -s99, -s98) %>% 
+    drop_na(Qspeed)
+  return(x2)
+}
